@@ -154,6 +154,9 @@ export default class RangeHandler {
                     span.style.fontSize = arg
                     const frontPart = document.createTextNode(
                         textNode.textContent.substring(0, this.range.startOffset))
+                    if (span.innerText.length === 0) {
+                        span.innerHTML = '&#8203';
+                    }
                     textNode.parentNode.insertBefore(frontPart, textNode)
                     textNode.parentNode.insertBefore(span, textNode)
                     textNode.textContent = textNode.textContent.substring(this.range.endOffset)

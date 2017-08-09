@@ -25,7 +25,7 @@ export default {
 </script>
 <style lang="less" scoped>
 .select-list {
-	width: 87px;
+	width: 90px;
 	.list-item {
 		float: left;
 		width: 25px;

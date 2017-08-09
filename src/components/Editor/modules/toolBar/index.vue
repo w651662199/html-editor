@@ -14,10 +14,10 @@ export default {
 			barItems: [
 				{name: 'size', title: '字体大小', class: 'icon-font-size', isHaveDashboard: true, command: null},
 				{name: 'bold', title: '字体加重', class: 'icon-font-bold', isHaveDashboard: false, command: 'bold'},
-				{name: 'color', title: '字体颜色', class: 'icon-painter', isHaveDashboard: true, command: null},
 				{name: 'italic', title: '字体倾斜', class: 'icon-italic', isHaveDashboard: false, command: 'italic'},
-				{name: 'link', title: '超链接', class: 'icon-link', isHaveDashboard: true, command: null},
-				{name: 'face', title: '表情', class: 'icon-face', isHaveDashboard: false, command: null}
+				{name: 'color', title: '字体颜色', class: 'icon-painter', isHaveDashboard: true, command: null},
+				{name: 'emoji', title: '表情', class: 'icon-face', isHaveDashboard: true, command: null},
+				{name: 'link', title: '超链接', class: 'icon-link', isHaveDashboard: true, command: null}
 			]
 		}
 	},

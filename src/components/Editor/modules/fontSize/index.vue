@@ -11,7 +11,7 @@ export default {
 			command: 'fontSize',
 			fontSizeList: [{
 				name: '大号',
-				value: '30px'
+				value: '18px'
 			}, {
 				name: '标准',
 				value: '16px'

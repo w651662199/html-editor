@@ -3,23 +3,26 @@
 		<div class="editor-toolbar">
 			<tool-bar></tool-bar>
 			<transition name="zoom-in-top">
-				<div class="editor-dashboard" :class="{'isLink': currentDashBoard === 'link'}" ref="dashboard" v-show="isShowDashboard">
+				<div class="editor-dashboard" ref="dashboard" v-show="isShowDashboard">
 					<font-size v-show="currentDashBoard === 'size'"></font-size>
 					<font-color v-show="currentDashBoard === 'color'"></font-color>
-					<editor-link v-show="currentDashBoard === 'link'"></editor-link>
+					<editor-link v-show="currentDashBoard === 'link'" :linkText="linkText"></editor-link>
+					<editor-emoji v-show="currentDashBoard === 'emoji'"></editor-emoji>
 				</div>
 			</transition>
 		</div>
-		<div class="editor-content" ref="content" contenteditable="true"></div>
+		<div class="editor-content" ref="content" contenteditable="true" v-html="content"></div>
 	</div>
 </template>
 <script>
+import Event from 'event';
 import RangeHandler from './range/handler';
 import {addEvent} from './utils/common.js';
 import ToolBar from './modules/toolBar/index.vue';
 import FontSize from './modules/fontSize/index.vue';
 import FontColor from './modules/fontColor/index.vue';
 import EditorLink from './modules/link/index.vue';
+import EditorEmoji from './modules/emoji/index.vue';
 export default {
 	name: 'html-editor',
 	props: {
@@ -37,32 +40,51 @@ export default {
 		ToolBar,
 		FontSize,
 		FontColor,
-		EditorLink
+		EditorLink,
+		EditorEmoji
 	},
 	data() {
 		return {
 			content: '',
 			isShowDashboard: false,
 			currentDashBoard: '',
-			dashboardStyle: ''
+			dashboardStyle: '',
+			linkText: ''
 		};
 	},
+	created() {
+		this.content = this.value;
+	},
 	mounted(){
-		const content = this.$refs.content
-		content.innerHTML = this.content
-		content.addEventListener('mouseup', this.saveCurrentRange, false)
+		const content = this.$refs.content;
+		content.innerHTML = this.content;
+		content.addEventListener('mouseenter', () => {
+			this.$refs.editor.parentNode.className = this.$refs.editor.parentNode.className.replace('draggable-box', '');
+		});
+		content.addEventListener('mousemove', () => {
+			this.$refs.editor.parentNode.className = this.$refs.editor.parentNode.className.replace('draggable-box', '');
+		});
+		const dashboard = this.$refs.dashboard;
+		dashboard.addEventListener('mouseenter', () => {
+			this.$refs.editor.parentNode.className = this.$refs.editor.parentNode.className.replace('draggable-box', '');
+		});
+		dashboard.addEventListener('mousemove', () => {
+			this.$refs.editor.parentNode.className = this.$refs.editor.parentNode.className.replace('draggable-box', '');
+		});
+		content.addEventListener('mouseup', this.saveCurrentRange, false);
 		content.addEventListener('keyup', () => {
-			this.$emit('change', content.innerHTML)
-			this.saveCurrentRange()
+			this.$emit('input', content.innerHTML);
+			this.saveCurrentRange();
 		}, false)
 		content.addEventListener('mouseout', (e) => {
 			if (e.target === content) {
-				this.saveCurrentRange()
+				this.saveCurrentRange();
+				this.$refs.editor.parentNode.className = this.$refs.editor.parentNode.className + ' draggable-box';
 			}
 		}, false)
 		this.touchHandler = (e) => {
 			if (content.contains(e.target)) {
-				this.saveCurrentRange()
+				this.saveCurrentRange();
 			}
 		}
 		let listItems = this.$refs.editor.getElementsByClassName('editor-dashboard');
@@ -80,13 +102,35 @@ export default {
 			if (centerX) {
 				setTimeout(() => {
 					if (type === 'link') {
-						let dashWidth = this.$refs.editor.offsetWidth;
-						this.$refs.dashboard.style.width = dashWidth - 3 + 'px';
-					} else {
-						this.$refs.dashboard.style.width = 'auto';
-						let dashWidth = this.$refs.dashboard.offsetWidth;
-						this.$refs.dashboard.style.left = centerX - dashWidth * 0.5 + 'px';
+						if (this.range) {
+							this.linkText = '';
+							const textNodes = new RangeHandler(this.range).getAllTextNodesInRange();
+							if (this.range.startOffset === this.range.endOffset && textNodes.length ===  1) {
+								this.linkText = '';
+							} else {
+								if (textNodes.length ===  1) {
+									const textNode = textNodes[0];
+									this.linkText = textNode.textContent.substring(this.range.startOffset, this.range.endOffset);
+								} else {
+									textNodes.forEach((node) => {
+										if (node == this.range.startContainer) {
+											this.linkText += node.textContent.substring(this.range.startOffset);
+										} else if (node == this.range.endContainer) {
+											this.linkText += node.textContent.substring(0, this.range.endOffset);
+										} else {
+											this.linkText += node.textContent
+										}
+									});
+								}
+							}
+						}
 					}
+					this.$refs.dashboard.style.width = 'auto';
+					let dashWidth = this.$refs.dashboard.offsetWidth;
+					if (!dashWidth && type == 'emoji') {
+						dashWidth = this.$refs.dashboard.getElementsByClassName('emoji-container')[0].offsetWidth;
+					}
+					this.$refs.dashboard.style.left = centerX - dashWidth * 0.5 + 'px';
 				}, 1);
 			}
 		},
@@ -94,20 +138,19 @@ export default {
 			this.isShowDashboard = false;
 		},
 		saveCurrentRange(){
-			const selection = window.getSelection ? window.getSelection() : document.getSelection()
+			const selection = window.getSelection ? window.getSelection() : document.getSelection();
 			if (!selection.rangeCount) {
 				return
 			}
-			const content = this.$refs.content
+			const content = this.$refs.content;
 			for (let i = 0; i < selection.rangeCount; i++) {
-				const range = selection.getRangeAt(0)
-				let start = range.startContainer
-				let end = range.endContainer
-				// for IE11 : node.contains(textNode) always return false
-				start = start.nodeType === Node.TEXT_NODE ? start.parentNode : start
-				end = end.nodeType === Node.TEXT_NODE ? end.parentNode : end
+				const range = selection.getRangeAt(0);
+				let start = range.startContainer;
+				let end = range.endContainer;
+				start = start.nodeType === Node.TEXT_NODE ? start.parentNode : start;
+				end = end.nodeType === Node.TEXT_NODE ? end.parentNode : end;
 				if (content.contains(start) && content.contains(end)) {
-					this.range = range
+					this.range = range;
 					break
 				}
 			}
@@ -129,21 +172,13 @@ export default {
 			}
 		},
 		execCommand(command, arg){
-            this.restoreSelection()
+            this.restoreSelection();
             if (this.range) {
-                new RangeHandler(this.range).execCommand(command, arg)
+                new RangeHandler(this.range).execCommand(command, arg);
             }
-            // this.toggleDashboard()
-            // this.$emit('change', this.$refs.content.innerHTML)
-        },
-		activeHandler(type) {
-			if (type === 'size') {
-				this.execCommand('fontSize', '30px');
-				this.isShowDashboard = false;
-			} else if (type === 'color') {
-				this.execCommand('foreColor', '#003399');
-			}
-		}
+            this.saveCurrentRange();
+            this.$emit('input', this.$refs.content.innerHTML);
+        }
 	}
 };
 </script>
@@ -156,10 +191,11 @@ export default {
 		list-style: none;
 	}
 	.html-editor {
-		width: 400px;
-		height: 400px;
+		width: 100%;
+		height: 300px;
 		border: 1px #ddd solid;
 		border-radius: 10px;
+		color: #000;
 		.editor-toolbar {
 			position: relative;
 			width: 100%;
@@ -168,6 +204,12 @@ export default {
 			box-sizing: border-box;
 			line-height: 50px;
 			text-align: left;
+			background: #fff8e6;
+			border-radius: 15px 15px 0 0;
+			.icon {
+				margin: 0 15px;
+				cursor: pointer;
+			}
 		}
 		.editor-dashboard {
 			position: absolute;
@@ -190,19 +232,27 @@ export default {
 			&.isLink {
 				border-top: 1px #ddd solid;
 				border-bottom: 1px #ddd solid;
-				left: 1px;
+				left: 1px !important;
 			}
 		}
 		.editor-content {
 			width: 100%;
-			height: 350px;
+			height: 250px;
 			padding: 20px;
 			box-sizing: border-box;
 			text-align: left;
+			cursor: text;
+			overflow: auto;
+			font-size: 16px;
+			a {
+				text-decoration: underline;
+				color: #0090ec;
+			}
 		}
 	}
-	.icon {
-		margin: 0 15px;
-		cursor: pointer;
+	.webpage-item-error {
+		.html-editor {
+			border-color: #ff0000;
+		}
 	}
 </style>
