@@ -93,6 +93,7 @@ export default class RangeHandler {
      * @param arg
      */
     execCommand(command, arg) {
+        document.execCommand('styleWithCSS', false, true);
         switch (command) {
 
             case Command.JUSTIFY_LEFT: {
@@ -127,98 +128,99 @@ export default class RangeHandler {
                 break
             }
             case Command.FONT_SIZE: {
+                document.execCommand(Command.FONT_SIZE, false, '4')
                 // 重新实现，改为直接修改样式
-                const textNodes = this.getAllTextNodesInRange()
-                if (!textNodes.length) {
-                    break
-                }
-                if (textNodes.length === 1 && textNodes[0] === this.range.startContainer
-                    && textNodes[0] === this.range.endContainer) {
-                    const textNode = textNodes[0]
-                    if (this.range.startOffset === 0
-                        && this.range.endOffset === textNode.textContent.length) {
-                        if (textNode.parentNode.childNodes.length === 1
-                            && isInlineElement(textNode.parentNode)) {
-                            textNode.parentNode.style.fontSize = arg
-                            break
-                        }
-                        const span = document.createElement('span')
-                        span.style.fontSize = arg
-                        textNode.parentNode.insertBefore(span, textNode)
-                        span.appendChild(textNode)
-                        break
-                    }
-                    const span = document.createElement('span')
-                    span.innerText = textNode.textContent.substring(
-                        this.range.startOffset, this.range.endOffset)
-                    span.style.fontSize = arg
-                    const frontPart = document.createTextNode(
-                        textNode.textContent.substring(0, this.range.startOffset))
-                    if (span.innerText.length === 0) {
-                        span.innerHTML = '&#8203';
-                    }
-                    textNode.parentNode.insertBefore(frontPart, textNode)
-                    textNode.parentNode.insertBefore(span, textNode)
-                    textNode.textContent = textNode.textContent.substring(this.range.endOffset)
-                    this.range.setStart(span, 0)
-                    this.range.setEnd(span, 1)
-                    break
-                }
+                // const textNodes = this.getAllTextNodesInRange()
+                // if (!textNodes.length) {
+                //     break
+                // }
+                // if (textNodes.length === 1 && textNodes[0] === this.range.startContainer
+                //     && textNodes[0] === this.range.endContainer) {
+                //     const textNode = textNodes[0]
+                //     if (this.range.startOffset === 0
+                //         && this.range.endOffset === textNode.textContent.length) {
+                //         if (textNode.parentNode.childNodes.length === 1
+                //             && isInlineElement(textNode.parentNode)) {
+                //             textNode.parentNode.style.fontSize = arg
+                //             break
+                //         }
+                //         const span = document.createElement('span')
+                //         span.style.fontSize = arg
+                //         textNode.parentNode.insertBefore(span, textNode)
+                //         span.appendChild(textNode)
+                //         break
+                //     }
+                //     const span = document.createElement('span')
+                //     span.innerText = textNode.textContent.substring(
+                //         this.range.startOffset, this.range.endOffset)
+                //     span.style.fontSize = arg
+                //     const frontPart = document.createTextNode(
+                //         textNode.textContent.substring(0, this.range.startOffset))
+                //     if (span.innerText.length === 0) {
+                //         span.innerHTML = '&#8203';
+                //     }
+                //     textNode.parentNode.insertBefore(frontPart, textNode)
+                //     textNode.parentNode.insertBefore(span, textNode)
+                //     textNode.textContent = textNode.textContent.substring(this.range.endOffset)
+                //     this.range.setStart(span, 0)
+                //     this.range.setEnd(span, 1)
+                //     break
+                // }
 
-                textNodes.forEach((textNode) => {
-                    if (textNode === this.range.startContainer) {
-                        if (this.range.startOffset === 0) {
-                            if (textNode.parentNode.childNodes.length === 1
-                                && isInlineElement(textNode.parentNode)) {
-                                textNode.parentNode.style.fontSize = arg
-                            } else {
-                                const span = document.createElement('span')
-                                span.style.fontSize = arg
-                                textNode.parentNode.insertBefore(span, textNode)
-                                span.appendChild(textNode)
-                            }
-                            return
-                        }
-                        const span = document.createElement('span')
-                        textNode.textContent = textNode.textContent.substring(
-                            0, this.range.startOffset)
-                        span.style.fontSize = arg
-                        textNode.parentNode.insertBefore(span, textNode)
-                        this.range.setStart(textNode, 0)
-                        return
-                    }
-                    if (textNode === this.range.endContainer) {
-                        if (this.range.endOffset === textNode.textContent.length) {
-                            if (textNode.parentNode.childNodes.length === 1
-                                && isInlineElement(textNode.parentNode)) {
-                                textNode.parentNode.style.fontSize = arg
-                            } else {
-                                const span = document.createElement('span')
-                                span.style.fontSize = arg
-                                textNode.parentNode.insertBefore(span, textNode)
-                                span.appendChild(textNode)
-                            }
-                            return
-                        }
-                        const span = document.createElement('span')
-                        textNode.textContent = textNode.textContent.substring(this.range.endOffset)
-                        span.style.fontSize = arg
-                        textNode.parentNode.insertBefore(span, textNode)
-                        span.appendChild(textNode)
-                        this.range.setStart(textNode, textNode.textContent.length)
-                        return
-                    }
-                    if (textNode.parentNode.childNodes.length === 1
-                        && isInlineElement(textNode.parentNode)) {
-                        textNode.parentNode.style.fontSize = arg
-                        return
-                    }
+                // textNodes.forEach((textNode) => {
+                //     if (textNode === this.range.startContainer) {
+                //         if (this.range.startOffset === 0) {
+                //             if (textNode.parentNode.childNodes.length === 1
+                //                 && isInlineElement(textNode.parentNode)) {
+                //                 textNode.parentNode.style.fontSize = arg
+                //             } else {
+                //                 const span = document.createElement('span')
+                //                 span.style.fontSize = arg
+                //                 textNode.parentNode.insertBefore(span, textNode)
+                //                 span.appendChild(textNode)
+                //             }
+                //             return
+                //         }
+                //         const span = document.createElement('span')
+                //         textNode.textContent = textNode.textContent.substring(
+                //             0, this.range.startOffset)
+                //         span.style.fontSize = arg
+                //         textNode.parentNode.insertBefore(span, textNode)
+                //         this.range.setStart(textNode, 0)
+                //         return
+                //     }
+                //     if (textNode === this.range.endContainer) {
+                //         if (this.range.endOffset === textNode.textContent.length) {
+                //             if (textNode.parentNode.childNodes.length === 1
+                //                 && isInlineElement(textNode.parentNode)) {
+                //                 textNode.parentNode.style.fontSize = arg
+                //             } else {
+                //                 const span = document.createElement('span')
+                //                 span.style.fontSize = arg
+                //                 textNode.parentNode.insertBefore(span, textNode)
+                //                 span.appendChild(textNode)
+                //             }
+                //             return
+                //         }
+                //         const span = document.createElement('span')
+                //         textNode.textContent = textNode.textContent.substring(this.range.endOffset)
+                //         span.style.fontSize = arg
+                //         textNode.parentNode.insertBefore(span, textNode)
+                //         span.appendChild(textNode)
+                //         this.range.setStart(textNode, textNode.textContent.length)
+                //         return
+                //     }
+                //     if (textNode.parentNode.childNodes.length === 1
+                //         && isInlineElement(textNode.parentNode)) {
+                //         textNode.parentNode.style.fontSize = arg
+                //         return
+                //     }
 
-                    const span = document.createElement('span')
-                    span.style.fontSize = arg
-                    textNode.parentNode.insertBefore(span, textNode)
-                    span.appendChild(textNode)
-                })
+                //     const span = document.createElement('span')
+                //     span.style.fontSize = arg
+                //     textNode.parentNode.insertBefore(span, textNode)
+                //     span.appendChild(textNode)
+                // })
                 break
             }
             case Command.FORMAT_BLOCK: {

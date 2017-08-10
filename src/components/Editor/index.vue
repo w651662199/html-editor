@@ -11,11 +11,12 @@
 				</div>
 			</transition>
 		</div>
-		<div class="editor-content" ref="content" contenteditable="true" v-html="content"></div>
+		<div class="editor-content" ref="content" contenteditable="true" v-html="content">
+		</div>
 	</div>
 </template>
 <script>
-import Event from 'event';
+// import Event from 'event';
 import RangeHandler from './range/handler';
 import {addEvent} from './utils/common.js';
 import ToolBar from './modules/toolBar/index.vue';
@@ -45,7 +46,7 @@ export default {
 	},
 	data() {
 		return {
-			content: '',
+			content: '<p>&#8203;</p>',
 			isShowDashboard: false,
 			currentDashBoard: '',
 			dashboardStyle: '',
@@ -53,34 +54,15 @@ export default {
 		};
 	},
 	created() {
-		this.content = this.value;
+		// this.content = this.value;
 	},
 	mounted(){
 		const content = this.$refs.content;
 		content.innerHTML = this.content;
-		content.addEventListener('mouseenter', () => {
-			this.$refs.editor.parentNode.className = this.$refs.editor.parentNode.className.replace('draggable-box', '');
-		});
-		content.addEventListener('mousemove', () => {
-			this.$refs.editor.parentNode.className = this.$refs.editor.parentNode.className.replace('draggable-box', '');
-		});
-		const dashboard = this.$refs.dashboard;
-		dashboard.addEventListener('mouseenter', () => {
-			this.$refs.editor.parentNode.className = this.$refs.editor.parentNode.className.replace('draggable-box', '');
-		});
-		dashboard.addEventListener('mousemove', () => {
-			this.$refs.editor.parentNode.className = this.$refs.editor.parentNode.className.replace('draggable-box', '');
-		});
 		content.addEventListener('mouseup', this.saveCurrentRange, false);
 		content.addEventListener('keyup', () => {
 			this.$emit('input', content.innerHTML);
 			this.saveCurrentRange();
-		}, false)
-		content.addEventListener('mouseout', (e) => {
-			if (e.target === content) {
-				this.saveCurrentRange();
-				this.$refs.editor.parentNode.className = this.$refs.editor.parentNode.className + ' draggable-box';
-			}
 		}, false)
 		this.touchHandler = (e) => {
 			if (content.contains(e.target)) {
@@ -162,11 +144,11 @@ export default {
 				selection.addRange(this.range);
 			} else {
 				const content = this.$refs.content;
-				const div = document.createElement('div');
+				const p = document.createElement('p');
 				const range = document.createRange();
-				content.appendChild(div);
-				range.setStart(div, 0);
-				range.setEnd(div, 0);
+				content.appendChild(p);
+				range.setStart(p, 0);
+				range.setEnd(p, 0);
 				selection.addRange(range);
 				this.range = range;
 			}

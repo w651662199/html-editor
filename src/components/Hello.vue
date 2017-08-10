@@ -1,7 +1,6 @@
 <template>
   <div>
     <m-editor v-model="text"></m-editor>
-    <m-editor v-model="text"></m-editor>
   </div>
 </template>
 
@@ -16,7 +15,7 @@ export default {
   name: 'hello',
   data () {
     return {
-      text: 'hello,world',
+      text: '',
       list: List,
       scheduleList: []
     }
